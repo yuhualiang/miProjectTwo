@@ -41,6 +41,9 @@ class Video implements IComponent {
     this.templateContainer.style.height = this.settings.height
     this.templateContainer.innerHTML = `
       <video class="${styles['video-content']}" src="${this.settings.url}"></video>
+      <div class="${styles['video-content-play']}">
+      <i class="iconfont iconplay"></i>
+      </div>
       <div class="${styles['video-controls']}">
         <div class="${styles['video-progress']}">
           <div class="${styles['video-progress-now']}"></div>
@@ -49,7 +52,7 @@ class Video implements IComponent {
           <div class="${styles['video-progress-track']}"></div>
         </div>
         <div class="${styles['video-play']}">
-          <i class="iconfont icon-bofang"></i>
+          <i class="iconfont icon-iconplay"></i>
         </div>
         <div class="${styles['video-time']}">
           <span>00:00</span> / <span>00:00</span>
@@ -80,6 +83,7 @@ class Video implements IComponent {
     let videoProgress = this.templateContainer.querySelectorAll(`.${styles['video-progress']} div`)
     let videoTime = this.templateContainer.querySelectorAll(`.${styles['video-time']} span`)
     let videoPlay = this.templateContainer.querySelector(`.${styles['video-play']} i`)
+    let videoContentPlay = this.templateContainer.querySelector(`.${styles['video-content-play']} i`)
     let videoVolume = this.templateContainer.querySelectorAll(`.${styles['video-volprogress']} div`)
     let videoVolumeIcon: HTMLElement = this.templateContainer.querySelector(`.${styles['video-volume']} i`)
     let videoVolumeScale: number = 0.5;
@@ -95,16 +99,17 @@ class Video implements IComponent {
       videoTime[1].innerHTML = formatTime(videoContent.duration)
     })
     videoContent.addEventListener('play', () => {
-      videoPlay.className = 'iconfont iconpause';
-      console.log(timer)
+      videoPlay.className = 'iconfont iconpause'
+      videoContentPlay.parentNode.style.display = 'none'
       timer = setInterval(playing, 1000)
-      clearInterval(timer - 1)
     });
     videoContent.addEventListener('ended', (event) => {
-
+      videoContentPlay.parentNode.style.display = 'block'
+      clearInterval(timer)
     })
     videoContent.addEventListener('pause', () => {
       videoPlay.className = 'iconfont iconplay'
+      videoContentPlay.parentNode.style.display = 'block'
       clearInterval(timer)
     });
     videoPlay.addEventListener('click', (e: MouseEvent) => {
@@ -116,6 +121,9 @@ class Video implements IComponent {
       }
       e.preventDefault()
       e.stopPropagation()
+    })
+    videoContentPlay.addEventListener('click', () => {
+      videoPlay.click()
     })
     // 播放进度的控制
     videoProgress[2].addEventListener('mousedown', function (e: MouseEvent) {
@@ -179,6 +187,7 @@ class Video implements IComponent {
     this.templateContainer.addEventListener('mouseleave', (e: MouseEvent) => {
       videoControls.style.bottom = -50 + 'px'
     })
+    // 点击视频区域改变播放状态
     videoContent.addEventListener('click', (e: MouseEvent) => {
       if (videoContent.paused) {
         videoContent.play()
