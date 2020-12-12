@@ -10,7 +10,7 @@ for (let i = 0; i < listItem.length; i++) {
     let title = this.dataset.title;
 
     popup({
-      width: '800px', height: '400px', pos: 'center',
+      width: '50%', height: '50%', pos: 'center',
       content(ele) {
         ele.style.backgroundColor = 'red'
         video({

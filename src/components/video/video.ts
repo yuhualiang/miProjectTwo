@@ -52,7 +52,7 @@ class Video implements IComponent {
           <span>00:00</span> / <span>00:00</span>
         </div>
         <div class="${styles['video-full']}">
-          <i class="iconfont iconfull"></i>          
+          <i class="iconfont iconfullscreen"></i>          
         </div>
         <div class="${styles['video-volume']}">
           <i class="iconfont iconvolume"></i>
@@ -73,27 +73,33 @@ class Video implements IComponent {
   handle() {
     let timer;
     let videoContent: HTMLVideoElement = this.templateContainer.querySelector(`.${styles['video-content']}`)
+    let videoControls: HTMLElement = this.templateContainer.querySelector(`.${styles['video-controls']}`)
     let videoProgress = this.templateContainer.querySelectorAll(`.${styles['video-progress']} div`)
     let videoTime = this.templateContainer.querySelectorAll(`.${styles['video-time']} span`)
     let videoPlay = this.templateContainer.querySelector(`.${styles['video-play']} i`)
-    let videoVolume = this.templateContainer.querySelector(`.${styles['video-volprogress']} div`)
+    let videoVolume = this.templateContainer.querySelectorAll(`.${styles['video-volprogress']} div`)
+    let videoVolumeIcon: HTMLElement = this.templateContainer.querySelector(`.${styles['video-volume']} i`)
+    let videoVolumeScale: number = 0.5;
+    videoVolumeIcon.style.cursor = 'pointer'
+    let videoFullScreen = this.templateContainer.querySelector(`.${styles['video-full']} i`)
     if (this.settings.autoplay) {
       timer = setInterval(playing, 1000)
       videoContent.play()
+      videoContent.volume = videoVolumeScale
     }
 
     videoContent.addEventListener('canplay', () => {
       videoTime[1].innerHTML = formatTime(videoContent.duration)
     })
     videoContent.addEventListener('play', () => {
-      videoPlay.className = 'iconfont iconzanting';
+      videoPlay.className = 'iconfont iconpause';
       timer = setInterval(playing, 1000)
     });
     videoContent.addEventListener('ended', (event) => {
       clearInterval(timer)
     })
     videoContent.addEventListener('pause', () => {
-      videoPlay.className = 'iconfont icon-bofang';
+      videoPlay.className = 'iconfont iconplay';
     });
     videoPlay.addEventListener('click', () => {
       if (videoContent.paused) {
@@ -103,10 +109,11 @@ class Video implements IComponent {
         videoContent.pause()
       }
     })
+    // 播放进度的控制
     videoProgress[2].addEventListener('mousedown', function (e: MouseEvent) {
       let downX = e.pageX // 按下点的x坐标
       let downL = this.offsetLeft // 到当前有定位的父元素节点的左偏移
-      
+
       document.onmousemove = (ev: MouseEvent) => {
         let scale = (ev.pageX - downX + downL + 8) / this.parentNode.offsetWidth;
         scale < 0 && (scale = 0);
@@ -125,7 +132,55 @@ class Video implements IComponent {
       }
       e.preventDefault()
     })
-
+    // 音量的控制
+    videoVolume[1].addEventListener('mousedown', function (e: MouseEvent) {
+      let downX = e.pageX // 按下点的x坐标
+      let downL = this.offsetLeft + 7 // 到当前有定位的父节点的左偏移
+      document.onmousemove = (ev: MouseEvent) => {
+        let pageX = ev.pageX
+        videoVolumeScale = (pageX - downX + downL) / this.parentNode.offsetWidth
+        videoVolumeScale > 1 && (videoVolumeScale = 1)
+        if (videoVolumeScale <= 0) {
+          videoVolumeScale = 0
+          videoVolumeIcon.className = 'iconfont iconmute'
+        } else {
+          videoVolumeIcon.className = 'iconfont iconvolume'
+        }
+        this.style.left = videoVolumeScale * 100 + '%'
+        videoVolume[0].style.width = videoVolumeScale * 100 + '%'
+        videoContent.volume = videoVolumeScale
+      }
+      document.onmouseup = () => {
+        document.onmousemove = document.onmouseup = null
+      }
+      e.preventDefault()
+    })
+    // 静音操作
+    videoVolumeIcon.addEventListener('click', function (e) {
+      if (videoContent.volume > 0) {
+        videoContent.volume = 0
+        this.className = 'iconfont iconmute'
+      } else {
+        this.className = 'iconfont iconvolume'
+        videoContent.volume = videoVolumeScale
+      }
+      e.preventDefault()
+    })
+    // 全屏操作
+    videoFullScreen.addEventListener('click', function(e: MouseEvent) {
+      videoContent.requestFullscreen()
+    })
+    this.templateContainer.addEventListener('mouseenter', (e: MouseEvent) => {
+      videoControls.style.bottom = 0 + 'px'
+    })
+    this.templateContainer.addEventListener('mouseleave', (e: MouseEvent) => {
+      if (timer) {
+        clearTimeout(timer)
+      }
+      timer = setTimeout(() => {
+        videoControls.style.bottom = -50 + 'px'
+      }, 500)
+    })
     function playing() {
       let scale = videoContent.currentTime / videoContent.duration
       let scaleSuc = videoContent.buffered.end(0) / videoContent.duration;
