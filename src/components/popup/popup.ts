@@ -47,7 +47,6 @@ class Popup implements Icomponent {
     this.settings.mask && this.createMask();
     this.contentCallback();
     this.handle();
-    this.dragPopup();
   }
   // 创建模板
   template() {
@@ -79,11 +78,68 @@ class Popup implements Icomponent {
     }
   }
   handle() {
+    let _this = this
     let popupClose = this.tempContainer.querySelector(`.${styles['popup-title']} i`);
+    let popupTitle = this.tempContainer.querySelector(`.${styles['popup-title']}`);
+
     popupClose.addEventListener('click', () => {
       document.body.removeChild(this.tempContainer);
       this.settings.mask && document.body.removeChild(this.mask);
     })
+
+    popupTitle.addEventListener('mousedown', function (e: MouseEvent) {
+      this.style.cursor = 'move'
+      let downX = e.pageX
+      let downY = e.pageY
+
+      let downL = this.parentNode.offsetLeft
+      let downT = this.parentNode.offsetTop
+      document.onmousemove = (ev: MouseEvent) => {
+        let pageX = ev.pageX
+        let pageY = ev.pageY
+        let viewHeight = getViewHeight()
+        let viewWidth = getViewWidth()
+        let left = pageX - downX + downL
+        let top = pageY - downY + downT
+        // console.log('pageX: ' + pageX + '---' + 'pageY: ' + pageY)
+        pageX <= 0 && (left = 0)
+        console.log('viewWidth: ' + viewWidth + '---' + 'pageX: ' + pageX)
+        pageX + 5 >= viewWidth && (left = viewWidth - _this.tempContainer.offsetWidth)
+        pageY <= 0 && (top = 0)
+        pageY + 5 >= viewHeight && (top = viewHeight - _this.tempContainer.offsetHeight)
+        _this.tempContainer.style.left = left + 'px'
+        _this.tempContainer.style.top = top + 'px'
+      }
+      document.onmouseup = () => {
+        popupTitle.style.cursor = 'default'
+        document.onmousemove = document.onmouseup = null
+      }
+      e.preventDefault()
+    })
+
+    /**
+     * 得到浏览器显示的屏幕高度
+     */
+    function getViewHeight() {
+      if (window.innerHeight != window.undefined)
+        return window.innerHeight;
+      if (document.compatMode == 'CSS1Compat')
+        return document.documentElement.clientHeight;
+      if (document.body)
+        return document.body.clientHeight;
+      return window.undefined;
+    }
+    /**
+     * 得到浏览器显示的屏幕宽度
+     */
+    function getViewWidth() {
+      if (window.innerWidth != window.undefined)
+        return window.innerWidth;
+      if (document.compatMode == 'CSS1Compat')
+        return document.documentElement.clientWidth;
+      if (document.body)
+        return document.body.clientWidth;
+    }
   }
   createMask() {
     this.mask = document.createElement('div');
@@ -94,41 +150,6 @@ class Popup implements Icomponent {
     let popupContent = this.tempContainer.querySelector(`.${styles['popup-content']}`);
     this.settings.content(popupContent)
   }
-  dragPopup() {
-    let popupTitle = this.tempContainer.querySelector(`.${styles['popup-title']}`);
-    let _this = this
-    popupTitle.addEventListener('mousedown', function (e) {
-      e.stopPropagation();
-      this.style.cursor = 'move'
-      _this.isDraging = true
-      _this.initX = e.clientX
-      _this.initY = e.clientY
-      _this.initOffsetLeft = _this.tempContainer.offsetLeft
-      _this.initOffsetTop = _this.tempContainer.offsetTop
-    })
-    popupTitle.addEventListener('mouseout', function () {
-      _this.isDraging = false
-      this.style.cursor = 'default'
-    })
-    popupTitle.addEventListener('mouseup', function () {
-      _this.isDraging = false
-      this.style.cursor = 'default'
-    })
-
-    window.document.addEventListener('mousemove', (e) => {
-      if (this.isDraging) {
-        let currX = e.clientX;
-        let currY = e.clientY;
-        let diffX = currX - this.initX
-        let diffY = currY - this.initY
-
-        this.tempContainer.style.left = this.initOffsetLeft + diffX + 'px';
-        this.tempContainer.style.top = this.initOffsetTop + diffY + 'px';
-      }
-
-    })
-  }
-
 }
 
 export default popup
