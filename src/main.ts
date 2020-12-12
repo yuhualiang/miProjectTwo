@@ -1,5 +1,6 @@
 import './main.css'
 import popup from './components/popup/popup'
+import video from './components/video/video'
 
 let listItem = document.querySelectorAll('#list li')
 
@@ -12,9 +13,12 @@ for (let i = 0; i < listItem.length; i++) {
       width: '800px', height: '400px', pos: 'center',
       content(ele) {
         ele.style.backgroundColor = 'red'
+        video({
+          ele,
+          url,
+          autoplay: true
+        })
       }
     })
   })
 }
-
-
