@@ -1,3 +1,5 @@
+import { clear } from "console";
+
 let { default: styles } = require('./video.css')
 
 
@@ -44,6 +46,7 @@ class Video implements IComponent {
           <div class="${styles['video-progress-now']}"></div>
           <div class="${styles['video-progress-suc']}"></div>
           <div class="${styles['video-progress-bar']}"></div>
+          <div class="${styles['video-progress-track']}"></div>
         </div>
         <div class="${styles['video-play']}">
           <i class="iconfont icon-bofang"></i>
@@ -93,21 +96,26 @@ class Video implements IComponent {
     })
     videoContent.addEventListener('play', () => {
       videoPlay.className = 'iconfont iconpause';
+      console.log(timer)
       timer = setInterval(playing, 1000)
+      clearInterval(timer - 1)
     });
     videoContent.addEventListener('ended', (event) => {
-      clearInterval(timer)
+
     })
     videoContent.addEventListener('pause', () => {
-      videoPlay.className = 'iconfont iconplay';
+      videoPlay.className = 'iconfont iconplay'
+      clearInterval(timer)
     });
-    videoPlay.addEventListener('click', () => {
+    videoPlay.addEventListener('click', (e: MouseEvent) => {
       if (videoContent.paused) {
         videoContent.play()
       }
       else {
         videoContent.pause()
       }
+      e.preventDefault()
+      e.stopPropagation()
     })
     // 播放进度的控制
     videoProgress[2].addEventListener('mousedown', function (e: MouseEvent) {
@@ -116,21 +124,16 @@ class Video implements IComponent {
 
       document.onmousemove = (ev: MouseEvent) => {
         let scale = (ev.pageX - downX + downL + 8) / this.parentNode.offsetWidth;
-        scale < 0 && (scale = 0);
-        scale > 1 && (scale = 1);
-
-        videoProgress[0].style.width = scale * 100 + '%'
-        videoProgress[1].style.width = scale * 100 + '%'
-        this.style.left = scale * 100 + '%'
-        console.log(videoContent.currentTime)
-        videoContent.currentTime = scale * videoContent.duration
-        console.log(videoContent.currentTime)
+        changeVideoProgress(scale)
       }
       document.onmouseup = () => {
         document.onmousemove = document.onmouseup = null
-        videoContent.paused && videoContent.play()
       }
       e.preventDefault()
+    })
+    videoProgress[3].addEventListener('click', function (e: MouseEvent) {
+      let scale = e.offsetX / this.parentNode.offsetWidth
+      changeVideoProgress(scale)
     })
     // 音量的控制
     videoVolume[1].addEventListener('mousedown', function (e: MouseEvent) {
@@ -167,19 +170,23 @@ class Video implements IComponent {
       e.preventDefault()
     })
     // 全屏操作
-    videoFullScreen.addEventListener('click', function(e: MouseEvent) {
+    videoFullScreen.addEventListener('click', function (e: MouseEvent) {
       videoContent.requestFullscreen()
     })
     this.templateContainer.addEventListener('mouseenter', (e: MouseEvent) => {
       videoControls.style.bottom = 0 + 'px'
     })
     this.templateContainer.addEventListener('mouseleave', (e: MouseEvent) => {
-      if (timer) {
-        clearTimeout(timer)
+      videoControls.style.bottom = -50 + 'px'
+    })
+    videoContent.addEventListener('click', (e: MouseEvent) => {
+      if (videoContent.paused) {
+        videoContent.play()
+      } else {
+        videoContent.pause()
       }
-      timer = setTimeout(() => {
-        videoControls.style.bottom = -50 + 'px'
-      }, 500)
+      e.preventDefault()
+      e.stopPropagation()
     })
     function playing() {
       let scale = videoContent.currentTime / videoContent.duration
@@ -188,6 +195,16 @@ class Video implements IComponent {
       videoProgress[1].style.width = scaleSuc * 100 + '%';
       videoProgress[2].style.left = scale * 100 + '%';
       videoTime[0].innerHTML = formatTime(videoContent.currentTime)
+    }
+    function changeVideoProgress(scale) {
+      scale < 0 && (scale = 0);
+      scale > 1 && (scale = 1);
+
+      videoProgress[0].style.width = scale * 100 + '%'
+      videoProgress[1].style.width = scale * 100 + '%'
+      videoProgress[2].style.left = scale * 100 + '%'
+      videoContent.currentTime = scale * videoContent.duration
+      videoContent.paused && videoContent.play()
     }
 
     function formatTime(number: number): string {

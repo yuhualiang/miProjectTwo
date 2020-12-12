@@ -54,6 +54,15 @@
   margin-top: -5px;
   z-index: 2;
   cursor: pointer;
+  z-index: 12;
+}
+.video-progress-track {
+  height: 9px;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: -2px;
+  z-index: 11;
 }
 
 .video-progress-now {
