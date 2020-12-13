@@ -5,10 +5,10 @@ interface Icomponent {
   tempContainer: HTMLElement;
   init: () => void;
   template: () => void;
-  handle: () => void;
+  handle(): void;
 }
 
-interface Ipopup {
+export interface Ipopup {
   width?: string;
   height?: string;
   title?: string;
@@ -16,7 +16,6 @@ interface Ipopup {
   mask?: boolean;
   content?: (content: HTMLElement) => void
 }
-
 function popup(options: Ipopup) {
   return new Popup(options)
 }
