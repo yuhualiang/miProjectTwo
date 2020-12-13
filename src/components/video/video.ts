@@ -16,6 +16,7 @@ interface IOption {
   height?: string;
   width?: string;
   autoplay?: boolean;
+  poster?: string;
 }
 
 
@@ -74,6 +75,10 @@ class Video implements IComponent {
       this.settings.ele.appendChild(this.templateContainer)
     } else {
       document.querySelector(`.${this.settings.ele}`).appendChild(this.templateContainer)
+    }
+    if (this.settings.poster) {
+      let videoNode: HTMLVideoElement = this.templateContainer.querySelector('video')
+      videoNode.setAttribute('poster', this.settings.poster)
     }
   }
   handle() {

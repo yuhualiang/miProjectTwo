@@ -89,8 +89,8 @@ class Popup implements Icomponent {
 
     popupTitle.addEventListener('mousedown', function (e: MouseEvent) {
       this.style.cursor = 'move'
-      let downX = e.pageX
-      let downY = e.pageY
+      let downX = e.pageX // 鼠标按下时在页面上的x坐标
+      let downY = e.pageY // 鼠标按下时在页面上的y坐标
 
       let downL = this.parentNode.offsetLeft
       let downT = this.parentNode.offsetTop
@@ -101,7 +101,6 @@ class Popup implements Icomponent {
         let viewWidth = getViewWidth()
         let left = pageX - downX + downL
         let top = pageY - downY + downT
-        // console.log('pageX: ' + pageX + '---' + 'pageY: ' + pageY)
         pageX <= 0 && (left = 0)
         console.log('viewWidth: ' + viewWidth + '---' + 'pageX: ' + pageX)
         pageX + 5 >= viewWidth && (left = viewWidth - _this.tempContainer.offsetWidth)
