@@ -1,8 +1,4 @@
-import { clear } from "console";
-
 let { default: styles } = require('./video.css')
-
-
 interface IComponent {
   templateContainer: HTMLElement;
   init: () => void;
